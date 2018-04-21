@@ -6,4 +6,9 @@ package com.aaronrevilla.bleoverwifi;
 
 public interface MainView {
 
+        void hasBleFeature();
+        void hasBluetoothPermissions();
+        void hasLocationPermissions();
+        void requestEnableBt();
+
 }

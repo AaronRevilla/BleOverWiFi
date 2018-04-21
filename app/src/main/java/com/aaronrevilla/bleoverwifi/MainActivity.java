@@ -13,20 +13,24 @@ import android.support.annotation.RequiresApi;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.view.View;
 import android.widget.Toast;
 
-public class MainActivity extends AppCompatActivity implements MainPresenter.Permissions {
+public class MainActivity extends AppCompatActivity implements MainView {
 
     private BluetoothStateReceiver bluetoothStateReceiver;
     private IntentFilter btIntentFilter;
     private BluetoothAdapter bluetoothAdapter;
     private final static int REQUEST_ENABLE_BT = 1;
     private final static int REQUEST_FINE_LOCATION = 2;
+    private MainPresenterImp presenter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        presenter = new MainPresenterImp(this, getApplicationContext());
 
         //create BT State Receiver
         bluetoothStateReceiver = new BluetoothStateReceiver();
@@ -43,6 +47,9 @@ public class MainActivity extends AppCompatActivity implements MainPresenter.Per
         hasBluetoothPermissions();
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             hasLocationPermissions();
+            presenter.startScanner();
+        }else{
+            presenter.startScanner();
         }
     }
 
@@ -53,6 +60,7 @@ public class MainActivity extends AppCompatActivity implements MainPresenter.Per
         if(bluetoothStateReceiver != null){
             unregisterReceiver(bluetoothStateReceiver);
         }
+        presenter.stopScaner();
     }
 
     @Override
@@ -109,6 +117,14 @@ public class MainActivity extends AppCompatActivity implements MainPresenter.Per
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
+    }
+
+    public void startScanner(View view) {
+        presenter.startScanner();
+    }
+
+    public void stopScanner(View view) {
+        presenter.stopScaner();
     }
 
     private class BluetoothStateReceiver extends BroadcastReceiver{

@@ -5,12 +5,6 @@ package com.aaronrevilla.bleoverwifi;
  */
 
 public interface MainPresenter{
-
-    interface Permissions{
-        void hasBleFeature();
-        void hasBluetoothPermissions();
-        void hasLocationPermissions();
-        void requestEnableBt();
-    }
-
+    void startScanner();
+    void stopScaner();
 }
