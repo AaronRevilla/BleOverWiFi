@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout
+    xmlns:android="http://schemas.android.com/apk/res/android" android:layout_width="match_parent"
+    android:layout_height="wrap_content">
+
+    <TextView
+        android:id="@+id/ble_device_name"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textStyle="bold"
+        android:textColor="@android:color/black"
+        android:text="DEVICE NAME"
+        />
+
+    <TextView
+        android:id="@+id/ble_device_mac"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textStyle="bold"
+        android:textColor="@android:color/black"
+        android:text="DEVICE MAC"
+        android:layout_below="@+id/ble_device_name"
+        />
+
+    <TextView
+        android:id="@+id/ble_device_rssi"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textStyle="bold"
+        android:textColor="@android:color/black"
+        android:text="DEVICE RSSI"
+        android:layout_toRightOf="@+id/ble_device_mac"
+        android:layout_below="@+id/ble_device_name"
+        android:layout_marginStart="10dp"
+
+        />
+
+    <TextView
+        android:id="@+id/ble_device_bytes"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textStyle="bold"
+        android:textColor="@android:color/black"
+        android:text="DEVICE BYTES"
+        android:layout_below="@+id/ble_device_mac"
+        />
+
+</RelativeLayout>

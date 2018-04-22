@@ -4,7 +4,9 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
+import android.os.Handler;
 import android.os.IBinder;
+import android.util.Log;
 
 import com.aaronrevilla.bleoverwifi.scanner.BleScanner;
 
@@ -14,40 +16,72 @@ import com.aaronrevilla.bleoverwifi.scanner.BleScanner;
 
 public class MainPresenterImp implements MainPresenter {
 
+    private static final String TAG = "MainPresenterImp_";
     private MainView view;
     private Context context;
     private boolean mServiceBound;
     private BleScanner scanner;
+    private Handler handler;
+
+    private Runnable readDevicesFromScanner = new Runnable() {
+        @Override
+        public void run() {
+            // Do something here on the main thread
+            Log.d(TAG, "readDevicesFromScanner mServiceBound " + mServiceBound );
+            if(mServiceBound){
+                Log.d(TAG, "scanner " + scanner.getBleObjects().size() );
+                view.displayDevices(scanner.getBleObjects());
+            }
+
+            handler.postDelayed(this, 2000);
+        }
+    };
 
     public  MainPresenterImp(MainView view, Context context) {
         this. view = view;
         this.context = context;
+        bindService();
     }
 
     @Override
     public void startScanner() {
-        if(!mServiceBound){
-            bindService();
+        if(scanner != null){
             scanner.startScanner();
+            getDevices();
+        }else{
+            bindService();
         }
     }
 
     @Override
     public void stopScaner() {
-        if(mServiceBound){
+        if(scanner != null){
             scanner.stopScanner();
-            unBindService();
+        }
+    }
+
+    @Override
+    public void getDevices() {
+        if(handler!= null){
+            handler.post(readDevicesFromScanner);
+        }else{
+            handler = new Handler();
+            handler.post(readDevicesFromScanner);
         }
     }
 
     public void bindService() {
-        Intent intent = new Intent(context, BleScanner.class);
-        context.startService(intent);
-        context.bindService(intent, mServiceConnection, Context.BIND_AUTO_CREATE);
+        if(!mServiceBound){
+            Intent intent = new Intent(context, BleScanner.class);
+            context.startService(intent);
+            context.bindService(intent, mServiceConnection, Context.BIND_AUTO_CREATE);
+        }
     }
 
     public void unBindService() {
-        context.unbindService(mServiceConnection);
+        if(mServiceBound){
+            context.unbindService(mServiceConnection);
+        }
     }
 
     private ServiceConnection mServiceConnection = new ServiceConnection() {

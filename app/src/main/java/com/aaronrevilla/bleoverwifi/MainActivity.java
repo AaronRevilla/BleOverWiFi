@@ -9,21 +9,37 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.os.Build;
+import android.os.Handler;
 import android.support.annotation.RequiresApi;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.widget.DefaultItemAnimator;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
+import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
+import android.widget.TextView;
 import android.widget.Toast;
+
+import com.aaronrevilla.bleoverwifi.scanner.BleObjectWrapper;
+
+import java.util.List;
 
 public class MainActivity extends AppCompatActivity implements MainView {
 
+    private static final String TAG = "MainActivity_";
     private BluetoothStateReceiver bluetoothStateReceiver;
     private IntentFilter btIntentFilter;
     private BluetoothAdapter bluetoothAdapter;
     private final static int REQUEST_ENABLE_BT = 1;
     private final static int REQUEST_FINE_LOCATION = 2;
     private MainPresenterImp presenter;
+
+    private RecyclerView recyclerView;
+    private BleDeviceAdapter listAdapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -38,6 +54,9 @@ public class MainActivity extends AppCompatActivity implements MainView {
         registerReceiver(bluetoothStateReceiver, btIntentFilter);
 
         bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
+
+        recyclerView = ((RecyclerView) findViewById(R.id.devices_list));
+
     }
 
     @Override
@@ -47,9 +66,9 @@ public class MainActivity extends AppCompatActivity implements MainView {
         hasBluetoothPermissions();
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             hasLocationPermissions();
-            presenter.startScanner();
+            //presenter.startScanner();
         }else{
-            presenter.startScanner();
+            //presenter.startScanner();
         }
     }
 
@@ -60,7 +79,7 @@ public class MainActivity extends AppCompatActivity implements MainView {
         if(bluetoothStateReceiver != null){
             unregisterReceiver(bluetoothStateReceiver);
         }
-        presenter.stopScaner();
+        //presenter.stopScaner();
     }
 
     @Override
@@ -99,6 +118,20 @@ public class MainActivity extends AppCompatActivity implements MainView {
             @Override
             public void onClick(DialogInterface dialog, int which) {//cancel button
                 dialog.dismiss();
+            }
+        });
+    }
+
+    @Override
+    public void displayDevices(final List<BleObjectWrapper> devices) {
+        new Handler().post(new Runnable() {
+            @Override
+            public void run() {
+                listAdapter = new BleDeviceAdapter(devices);
+                RecyclerView.LayoutManager mLayoutManager = new LinearLayoutManager(getApplicationContext());
+                recyclerView.setLayoutManager(mLayoutManager);
+                recyclerView.setItemAnimator(new DefaultItemAnimator());
+                recyclerView.setAdapter(listAdapter);
             }
         });
     }
@@ -164,6 +197,47 @@ public class MainActivity extends AppCompatActivity implements MainView {
                 }
             }
 
+        }
+    }
+
+    private class BleDeviceAdapter extends RecyclerView.Adapter<BleDeviceAdapter.BleViewHolder>{
+
+        public List<BleObjectWrapper> bleDevices;
+
+        public BleDeviceAdapter(List<BleObjectWrapper> list){
+            bleDevices = list;
+        }
+
+        @Override
+        public BleDeviceAdapter.BleViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+            View itemView = LayoutInflater.from(parent.getContext()).inflate(R.layout.ble_device_row, parent, false);
+            return new BleViewHolder(itemView);
+        }
+
+        @Override
+        public void onBindViewHolder(BleViewHolder holder, int position) {
+            BleObjectWrapper device = bleDevices.get(position);
+            holder.deviceNameView.setText(device.getBluetoothDevice().getName());
+            holder.deviceMACView.setText(device.getBluetoothDevice().getAddress());
+            holder.deviceRssiView.setText(""+device.getRssi());
+            holder.deviceScanRecordView.setText(device.getScanRecord().toString());
+        }
+
+        @Override
+        public int getItemCount() {
+            return bleDevices.size();
+        }
+
+        public class BleViewHolder extends RecyclerView.ViewHolder{
+            public TextView deviceNameView, deviceMACView, deviceRssiView, deviceScanRecordView;
+
+            public BleViewHolder(View itemView) {
+                super(itemView);
+                deviceNameView = ((TextView) itemView.findViewById(R.id.ble_device_name));
+                deviceMACView = ((TextView) itemView.findViewById(R.id.ble_device_mac));
+                deviceRssiView = ((TextView) itemView.findViewById(R.id.ble_device_rssi));
+                deviceScanRecordView = ((TextView) itemView.findViewById(R.id.ble_device_bytes));
+            }
         }
     }
 }

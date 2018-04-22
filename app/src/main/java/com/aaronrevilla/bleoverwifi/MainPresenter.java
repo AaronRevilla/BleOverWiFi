@@ -7,4 +7,5 @@ package com.aaronrevilla.bleoverwifi;
 public interface MainPresenter{
     void startScanner();
     void stopScaner();
+    void getDevices();
 }
